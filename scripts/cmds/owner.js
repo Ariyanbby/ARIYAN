@@ -1,72 +1,59 @@
-const axios = require('axios');
-const fs = require('fs');
-const path = require('path');
+const fs = require("fs-extra");
+const request = require("request");
+const path = require("path");
 
 module.exports = {
-	config: {
-		name: "owner",
-		author: "ShAn",
-		role: 0,
-		shortDescription: " ",
-		longDescription: "",
-		category: "admin",
-		guide: "{pn}"
-	},
+  config: {
+    name: "owner",
+    version: "1.3.0",
+    author: "Mᴏʜᴀᴍᴍᴀᴅ Aᴋᴀsʜ",
+    role: 0,
+    shortDescription: "Owner information with image",
+    category: "Information",
+    guide: {
+      en: "owner"
+    }
+  },
 
-	onStart: async function ({ api, event }) {
-		try {
-			const ownerInfo = {
-				name: '𝑬𝒘𝑹 𝑺𝒉𝑨𝒏',
-				gender: '𝑴𝒂𝑳𝒆',
-				Birthday: '10-𝟎𝟕-𝟐𝟎𝟎5',
-				religion: '𝙄𝒔𝒍𝑨𝒎',
-				hobby: '𝑺𝒍𝒆𝒆𝑷𝒊𝒏𝑮',
-				Fb: 'https://www.facebook.com/Sh4n.Dev1',
-				Relationship: '𝑺𝒊𝒏𝑮𝒆𝒍',
-				Height: '5"3'
-			};
+  onStart: async function ({ api, event }) {
+    const ownerText = 
+`╭─ 👑 Oᴡɴᴇʀ Iɴғᴏ 👑 ─╮
+│ 👤 Nᴀᴍᴇ       : 亗^⁠_^𝗔_𝗥_𝗜_𝗬_𝗔_⁠𝗡^_^ 𝐁𝐁'𝐙 ✿᭄
+│🧸 Nɪᴄᴋ       : AruuuH
+│ 🎂 Aɢᴇ        : 19+
+│ 💘 Rᴇʟᴀᴛɪᴏɴ : Married 
+│ 🎓 Pʀᴏғᴇssɪᴏɴ : Business 
+│ 📚 Eᴅᴜᴄᴀᴛɪᴏɴ : chi oi gula tw borolokera kore 😊🖕🏻
+│ 🏡 Lᴏᴄᴀᴛɪᴏɴ : Dhaka keraniganj 
+├─ 🔗 Cᴏɴᴛᴀᴄᴛ ─╮
+│ 📘 Facebook  : https://facebook.com/61582149885357
+│ 💬 messenger : m.me/aruuhbbz
+│ 📞 WhatsApp  : wa.me/01704471566
+╰────────────────╯`;
 
-			const bold = 'https://drive.google.com/uc?export=download&id=1J4yQ13L2WTpdOuqcP0yEmzULACdwfvnQ';
-			const tmpFolderPath = path.join(__dirname, 'tmp');
+   const cacheDir = path.join(__dirname, "cache");
+    const imgPath = path.join(cacheDir, "owner.jpg");
 
-			if (!fs.existsSync(tmpFolderPath)) {
-				fs.mkdirSync(tmpFolderPath);
-			}
+    if (!fs.existsSync(cacheDir)) fs.mkdirSync(cacheDir);
 
-			const videoResponse = await axios.get(bold, { responseType: 'arraybuffer' });
-			const videoPath = path.join(tmpFolderPath, 'owner_video.mp4');
+    const imgLink = "https://i.imgur.com/KmX1XZp.jpeg";
 
-			fs.writeFileSync(videoPath, Buffer.from(videoResponse.data, 'binary'));
+    const send = () => {
+      api.sendMessage(
+        {
+          body: ownerText,
+          attachment: fs.createReadStream(imgPath)
+        },
+        event.threadID,
+        () => fs.unlinkSync(imgPath),
+        event.messageID
+      );
+    };
 
-			const response = `
-◈ 𝖮𝖶𝖭𝖤𝖱 𝖨𝖭𝖥𝖮𝖱𝖬𝖠𝖳𝖨𝖮𝖭:\n
- ~Name: ${ownerInfo.name}
- ~Gender: ${ownerInfo.gender}
- ~Birthday: ${ownerInfo.Birthday}
- ~Religion: ${ownerInfo.religion}
- ~Relationship: ${ownerInfo.Relationship}
- ~Hobby: ${ownerInfo.hobby}
- ~Fb: ${ownerInfo.Fb}
- ~Height: ${ownerInfo.Height}
-			`;
-
-			await api.sendMessage({
-				body: response,
-				attachment: fs.createReadStream(videoPath)
-			}, event.threadID, event.messageID);
-			
-			fs.unlinkSync(videoPath);
-
-			api.setMessageReaction('😍', event.messageID, (err) => {}, true);
-		} catch (error) {
-			console.error('Error in ownerinfo command:', error);
-			return api.sendMessage('An error occurred while processing the command.', event.threadID);
-		}
-	},
-
-	onChat: async function ({ api, event }) {
-		if (event.body && event.body.toLowerCase() === "owner") {
-			this.onStart({ api, event });
-		}
-	}
+    request(encodeURI(imgLink))
+      .pipe(fs.createWriteStream(imgPath))
+      .on("close", send);
+  }
 };
+
+    
